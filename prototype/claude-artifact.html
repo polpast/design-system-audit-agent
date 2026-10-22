@@ -1,0 +1,550 @@
+<title>Design System Audit Agent</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a calm header band with a violet-cyan glow, then three white working panels (library · agent · approval queue) that stack on phones */
+:root{
+  --bg:#ffffff; --ground:#f6f9fc; --surface:#ffffff; --sunk:#f6f9fc;
+  --ink:#0a2540; --text:#425466; --muted:#6b7c93; --line:#e3e8ee;
+  --accent:#635bff; --accent-ink:#ffffff; --accent-soft:#efeeff;
+  --good:#00875f; --good-soft:#e3f7ef; --pending:#b25e09; --pending-soft:#fdf1e1; --danger:#df1b41; --danger-soft:#fde8ec;
+  --bubble:#0a2540; --bubble-ink:#ffffff;
+  --glow-a:rgba(99,91,255,.20); --glow-b:rgba(0,190,255,.16); --glow-c:rgba(255,120,180,.10);
+  --shadow:0 2px 5px -1px rgba(50,50,93,.16),0 1px 3px -1px rgba(0,0,0,.12);
+  --shadow-lg:0 13px 27px -5px rgba(50,50,93,.16),0 8px 16px -8px rgba(0,0,0,.16);
+  --display:"Inter Tight","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0b1a2e; --ground:#0d1f36; --surface:#112742; --sunk:#0e2139;
+  --ink:#f0f4f8; --text:#b8c6d6; --muted:#8a9bb0; --line:#20395a;
+  --accent:#8b85ff; --accent-ink:#0b1a2e; --accent-soft:#232a5e;
+  --good:#3fd69a; --good-soft:#0f3833; --pending:#f5b45e; --pending-soft:#3a2b14; --danger:#ff7d95; --danger-soft:#3d1624;
+  --bubble:#635bff; --bubble-ink:#ffffff;
+  --glow-a:rgba(99,91,255,.32); --glow-b:rgba(0,190,255,.18); --glow-c:rgba(255,120,180,.10);
+  --shadow:0 2px 6px -1px rgba(0,0,0,.45),0 1px 3px -1px rgba(0,0,0,.35);
+  --shadow-lg:0 14px 30px -6px rgba(0,0,0,.55),0 8px 16px -8px rgba(0,0,0,.45);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b1a2e; --ground:#0d1f36; --surface:#112742; --sunk:#0e2139;
+  --ink:#f0f4f8; --text:#b8c6d6; --muted:#8a9bb0; --line:#20395a;
+  --accent:#8b85ff; --accent-ink:#0b1a2e; --accent-soft:#232a5e;
+  --good:#3fd69a; --good-soft:#0f3833; --pending:#f5b45e; --pending-soft:#3a2b14; --danger:#ff7d95; --danger-soft:#3d1624;
+  --bubble:#635bff; --bubble-ink:#ffffff;
+  --glow-a:rgba(99,91,255,.32); --glow-b:rgba(0,190,255,.18); --glow-c:rgba(255,120,180,.10);
+  --shadow:0 2px 6px -1px rgba(0,0,0,.45),0 1px 3px -1px rgba(0,0,0,.35);
+  --shadow-lg:0 14px 30px -6px rgba(0,0,0,.55),0 8px 16px -8px rgba(0,0,0,.45);
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);-webkit-font-smoothing:antialiased;transition:background-color .2s ease}
+.gut{padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.inner{max-width:1360px;margin:0 auto}
+
+/* Header band */
+.band{position:relative;overflow:hidden;background:var(--ground);border-bottom:1px solid var(--line)}
+.band::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(60% 120% at 88% -10%, var(--glow-a), transparent 60%),
+             radial-gradient(45% 90% at 62% -30%, var(--glow-b), transparent 60%),
+             radial-gradient(35% 80% at 100% 60%, var(--glow-c), transparent 65%)}
+.band .inner{position:relative;padding-block:28px 30px;display:flex;flex-direction:column;gap:12px}
+.top-row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.eyebrow{font:600 13px/1 var(--body);color:var(--accent);letter-spacing:.01em}
+h1{font:700 clamp(1.9rem,4vw,2.6rem)/1.08 var(--display);letter-spacing:-.025em;margin:0;text-wrap:balance}
+.lede{color:var(--text);font-size:clamp(15px,1.6vw,17px);margin:0;max-width:62ch}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.pill{font:500 13px/1 var(--body);padding:8px 12px;border-radius:99px;background:var(--surface);border:1px solid var(--line);color:var(--text);box-shadow:var(--shadow);display:inline-flex;align-items:center;gap:7px}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.pill.live .dot{background:var(--good)}
+.theme{width:40px;height:40px;padding:0;border-radius:99px;display:grid;place-items:center;background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow);cursor:pointer;flex:none}
+.theme svg{width:18px;height:18px}
+.theme:hover{color:var(--accent)}
+
+/* Demo banner */
+main.inner{padding-block:24px 40px;display:flex;flex-direction:column;gap:20px}
+.banner{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;
+  background:var(--pending-soft);border:1px solid var(--line);border-radius:10px;padding:12px 16px;color:var(--ink)}
+.banner p{margin:0;min-width:0;flex:1 1 280px;font-size:14.5px}
+
+/* Panels */
+.grid{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:760px){.grid{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)} .lib{grid-column:1 / -1}}
+@media (min-width:1150px){.grid{grid-template-columns:minmax(0,.95fr) minmax(0,1.3fr) minmax(0,1fr)} .lib{grid-column:auto}}
+.pane{background:var(--surface);border-radius:12px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.pane-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.pane-h h2{font:600 15px/1 var(--body);margin:0;letter-spacing:-.005em}
+.pane-h span{font:500 13px/1 var(--body);color:var(--muted)}
+.count{font:600 12px/1 var(--body)!important;padding:6px 10px;border-radius:99px;background:var(--pending-soft);color:var(--pending)!important}
+
+/* Library */
+.tbl-wrap{overflow:auto;max-height:660px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+th{font:500 12px/1 var(--body);color:var(--muted);text-align:left;padding:12px 8px 10px;position:sticky;top:0;background:var(--surface);z-index:1}
+th.n,td.n{text-align:right}
+td{padding:9px 8px;border-top:1px solid var(--line);vertical-align:top;color:var(--text)}
+th:first-child,td:first-child{padding-left:16px}th:last-child,td:last-child{padding-right:16px}
+tr.cat td{background:var(--sunk);font:600 11.5px/1 var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:9px 14px}
+td.name{font-weight:600;color:var(--ink)}
+td.name small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.hot{color:var(--pending)!important;font-weight:600}
+.st{display:inline-block;font:500 11.5px/1.3 var(--body);padding:3px 7px;border-radius:5px;background:var(--sunk);color:var(--text);white-space:nowrap}
+.st.changed{background:var(--accent-soft);color:var(--accent)}
+.st.dep{background:var(--danger-soft);color:var(--danger)}
+tr.flash td{animation:flash 1.6s ease}
+@keyframes flash{0%{background:var(--accent-soft)}100%{background:transparent}}
+
+/* Agent */
+.chat{min-height:540px}
+.log{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px;max-height:580px}
+.msg{max-width:94%;min-width:0}
+.msg.user{align-self:flex-end;background:var(--bubble);color:var(--bubble-ink);padding:10px 14px;border-radius:12px 12px 3px 12px;font-size:14.5px}
+.msg.agent{align-self:flex-start;background:var(--sunk);border:1px solid var(--line);border-radius:12px 12px 12px 3px;padding:14px 16px}
+.who{display:flex;align-items:center;gap:8px;font:600 13px/1 var(--body);margin-bottom:10px;color:var(--ink)}
+.who::before{content:"";width:20px;height:20px;border-radius:6px;background:linear-gradient(135deg,#635bff,#00c2ff)}
+.msg p{margin:0 0 8px;color:var(--text);font-size:14.5px}.msg p:last-child{margin:0}
+.msg strong{color:var(--ink)}
+.msg ul{margin:0 0 8px;padding-left:18px;color:var(--text);font-size:14.5px}
+.msg code{font:12.5px var(--mono)}
+.steps{list-style:none;margin:0 0 12px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;gap:6px}
+.steps:empty{display:none}
+.steps li{font:13px/1.35 var(--body);color:var(--text);display:flex;gap:8px;align-items:flex-start;min-width:0}
+.steps li::before{content:"✓";flex:none;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font:700 10px/1 var(--body);background:var(--good-soft);color:var(--good);margin-top:1px}
+.steps li.propose::before{content:"→";background:var(--accent-soft);color:var(--accent)}
+.steps li.err{color:var(--danger)}
+.steps li.err::before{content:"!";background:var(--danger-soft);color:var(--danger)}
+.thinking{color:var(--muted)!important;font-style:italic}
+.empty{color:var(--muted);font-size:14px;padding:4px 2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 14px}
+.chip{font:500 13px/1.2 var(--body);border:0;background:var(--accent-soft);color:var(--accent);border-radius:99px;padding:8px 12px;cursor:pointer}
+.chip:hover{filter:brightness(.97)}
+.composer{display:flex;gap:10px;padding:14px 20px;border-top:1px solid var(--line);align-items:flex-end}
+textarea{flex:1;min-width:0;resize:none;font:14.5px/1.4 var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;height:44px;box-shadow:inset 0 1px 2px rgba(50,50,93,.06)}
+textarea::placeholder{color:var(--muted)}
+button{font:600 14px/1 var(--body);border-radius:99px;border:1px solid transparent;padding:12px 18px;cursor:pointer;white-space:nowrap}
+button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.primary{background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 10px -3px rgba(99,91,255,.5)}
+.primary:hover{filter:brightness(1.06)}
+.ghost{background:var(--surface);border-color:var(--line);color:var(--ink);box-shadow:var(--shadow)}
+.danger{background:var(--surface);border-color:var(--danger);color:var(--danger)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.foot{font:13px/1.4 var(--body);color:var(--muted);padding:0 20px 14px}
+
+/* Queue */
+.queue{padding:16px;display:flex;flex-direction:column;gap:14px;overflow:auto;max-height:660px;background:var(--sunk);flex:1}
+.card{border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--surface);box-shadow:var(--shadow)}
+.card.rejected{opacity:.72}
+.card-top{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.what{font:600 16px/1.3 var(--display);letter-spacing:-.01em;min-width:0;color:var(--ink)}
+.act{display:block;font:600 11.5px/1 var(--body);color:var(--accent);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+.conf{font:600 12px/1 var(--body);padding:5px 9px;border-radius:99px;white-space:nowrap;text-transform:capitalize}
+.conf.high{background:var(--good-soft);color:var(--good)}
+.conf.medium{background:var(--sunk);color:var(--text);border:1px solid var(--line)}
+.conf.low{background:var(--pending-soft);color:var(--pending)}
+.meter{height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;border-radius:4px}
+.meter.high i{width:88%;background:var(--good)}
+.meter.medium i{width:60%;background:var(--text)}
+.meter.low i{width:30%;background:var(--pending)}
+.card p{margin:0;font-size:14px;color:var(--text)}
+.unsure{font-size:13px;color:var(--pending)!important;background:var(--pending-soft);border-radius:6px;padding:8px 10px}
+details{font-size:13px;color:var(--text)}
+summary{cursor:pointer;font:500 13px var(--body);color:var(--accent)}
+details div{margin-top:6px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btns button{padding:9px 15px;font-size:13.5px}
+.reason{display:flex;gap:8px;flex-wrap:wrap}
+.reason input{flex:1 1 160px;min-width:0;font:13.5px var(--body);padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.reason button{padding:9px 15px;font-size:13.5px}
+.outcome{font:500 13px/1.4 var(--body);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card.approved .outcome{color:var(--good)}
+.card.rejected .outcome{color:var(--muted)}
+.link{background:none;border:none;padding:0;margin-left:auto;color:var(--accent);font:500 13px var(--body);box-shadow:none}
+
+/* Design notes */
+.how{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));padding-top:8px}
+.how div{min-width:0;border-top:2px solid var(--accent-soft);padding-top:14px}
+.how h3{font:600 15px/1.3 var(--display);margin:0 0 6px;color:var(--ink)}
+.how p{margin:0;color:var(--text);font-size:14px;max-width:60ch}
+@media (prefers-reduced-motion:reduce){tr.flash td{animation:none} body{transition:none}}
+</style>
+
+<header class="band gut"><div class="inner">
+  <div class="top-row">
+    <div class="eyebrow">Lab · Agentic UX prototype</div>
+    <button class="theme" id="themeBtn" type="button" aria-label="Switch to dark mode"></button>
+  </div>
+  <h1>Design System Audit Agent</h1>
+  <p class="lede">An agent reads a component library and proposes what to keep, merge, deprecate or update. It can't change anything on its own: every proposal waits for a person to approve it.</p>
+  <div class="pills">
+    <span class="pill" id="modePill"><span class="dot"></span><span id="modeLabel">Connecting…</span></span>
+    <span class="pill">Northwind DS · fictional data</span>
+    <span class="pill">Paul Pastourmatzis</span>
+  </div>
+</div></header>
+
+<main class="inner gut">
+  <div class="banner" id="demoBanner" hidden>
+    <p id="demoText">The live agent isn't available in this view. You can watch a recorded run of the same workflow and approve or reject its proposals yourself.</p>
+    <button class="primary" id="playDemo">Play recorded run</button>
+  </div>
+
+  <div class="grid">
+    <section class="pane lib" aria-label="Component library">
+      <div class="pane-h"><h2>Library</h2><span id="libCount"></span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Component</th><th class="n">Instances</th><th class="n">Detached</th><th>Status</th></tr></thead>
+          <tbody id="libBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="pane chat" aria-label="Agent">
+      <div class="pane-h"><h2>Agent</h2><span>Proposes, never applies</span></div>
+      <div class="log" id="log" aria-live="polite">
+        <div class="empty" id="logEmpty">Ask for an audit, for example "Find duplicates across the library". You'll see each lookup the agent makes, and its proposals land in the approval queue.</div>
+      </div>
+      <div class="chips" id="chips">
+        <button class="chip" data-q="Find duplicates across the library.">Find duplicates across the library</button>
+        <button class="chip" data-q="Audit the form components.">Audit the form components</button>
+        <button class="chip" data-q="Should we deprecate Snackbr?">Should we deprecate Snackbr? (typo)</button>
+        <button class="chip" data-q="Is SegmentedControl just another Tabs?">Is SegmentedControl just Tabs?</button>
+      </div>
+      <form class="composer" id="composer">
+        <label for="msg" hidden>Message</label>
+        <textarea id="msg" placeholder="Ask the agent…" rows="1"></textarea>
+        <button type="submit" class="primary" id="sendBtn">Send</button>
+        <button type="button" class="ghost" id="stopBtn" hidden>Stop</button>
+      </form>
+      <div class="foot" id="foot">Runs on your own Claude account. Nothing is applied without your approval.</div>
+    </section>
+
+    <section class="pane" aria-label="Approval queue">
+      <div class="pane-h"><h2>Approval queue</h2><span class="count" id="qCount">0 waiting</span></div>
+      <div class="queue" id="queue"><div class="empty" id="qEmpty">No proposals yet. The agent's suggestions appear here with its confidence and evidence.</div></div>
+    </section>
+  </div>
+
+  <section class="how" aria-label="Design decisions">
+    <div><h3>Propose, never apply</h3><p>The agent's only write tool is "propose a change". Applying happens on approval by a person, and every approval can be undone.</p></div>
+    <div><h3>Confidence is shown, not hidden</h3><p>Each proposal carries high, medium or low confidence. Low-confidence proposals say what would settle the question.</p></div>
+    <div><h3>Failures are visible</h3><p>Failed lookups appear in the step log in red, and the agent recovers from them (a misspelled component name, for example) instead of guessing silently.</p></div>
+    <div><h3>Rejections teach the next turn</h3><p>When you reject a proposal, your reason is passed to the agent with your next message so it doesn't propose the same thing again.</p></div>
+  </section>
+</main>
+
+<script>
+const LIBRARY = [
+  {name:"Button",category:"Actions",instances:1840,detachedPct:2,variants:"primary, secondary, ghost, danger",lastUpdated:"2026-06",overlapsWith:[],a11y:"Passes WCAG 2.1 AA.",notes:"Core component.",teams:["Checkout","Account","Search","Admin"]},
+  {name:"IconButton",category:"Actions",instances:612,detachedPct:4,variants:"sm, md, lg",lastUpdated:"2026-04",overlapsWith:[],a11y:"Requires aria-label; 9% of instances are missing it.",notes:"",teams:["Checkout","Search","Admin"]},
+  {name:"LinkButton",category:"Actions",instances:95,detachedPct:31,variants:"default",lastUpdated:"2024-02",overlapsWith:["Button (ghost)"],a11y:"Disabled state fails text contrast (2.6:1).",notes:"Built before Button had a ghost variant. Teams detach it to change padding.",teams:["Account","Marketing site"]},
+  {name:"TextField",category:"Forms",instances:920,detachedPct:3,variants:"default, with icon, with helper text",lastUpdated:"2026-05",overlapsWith:[],a11y:"Passes WCAG 2.1 AA.",notes:"",teams:["Checkout","Account","Admin"]},
+  {name:"SearchField",category:"Forms",instances:210,detachedPct:18,variants:"default",lastUpdated:"2025-09",overlapsWith:["TextField (with icon)"],a11y:"Clear button is not keyboard reachable when added manually.",notes:"Most detachments add a clear (x) button by hand.",teams:["Search","Admin"]},
+  {name:"Select",category:"Forms",instances:480,detachedPct:6,variants:"single, multi, searchable",lastUpdated:"2026-03",overlapsWith:[],a11y:"Passes WCAG 2.1 AA, full keyboard support.",notes:"",teams:["Checkout","Account","Admin"]},
+  {name:"Dropdown",category:"Forms",instances:140,detachedPct:42,variants:"single",lastUpdated:"2023-01",overlapsWith:["Select (single)"],a11y:"No keyboard navigation of options.",notes:"Legacy. Select replaced it functionally in 2024; never formally retired.",teams:["Admin"]},
+  {name:"Toast",category:"Feedback",instances:300,detachedPct:5,variants:"info, success, error",lastUpdated:"2026-02",overlapsWith:[],a11y:"Announced via aria-live.",notes:"",teams:["Checkout","Account","Admin"]},
+  {name:"Snackbar",category:"Feedback",instances:44,detachedPct:27,variants:"default, with action",lastUpdated:"2023-06",overlapsWith:["Toast"],a11y:"Not announced to screen readers.",notes:"Same job as Toast. Only the 'with action' variant has no Toast equivalent yet.",teams:["Admin"]},
+  {name:"Banner",category:"Feedback",instances:160,detachedPct:7,variants:"info, warning, critical",lastUpdated:"2026-01",overlapsWith:["Alert"],a11y:"Passes WCAG 2.1 AA.",notes:"Page-level, full width, persistent.",teams:["Checkout","Account"]},
+  {name:"Alert",category:"Feedback",instances:75,detachedPct:9,variants:"info, warning, error",lastUpdated:"2025-11",overlapsWith:["Banner"],a11y:"Passes WCAG 2.1 AA.",notes:"Inline, inside forms and cards, sits next to the content it describes. Visual style is close to Banner.",teams:["Checkout","Admin"]},
+  {name:"Card",category:"Layout",instances:1100,detachedPct:8,variants:"default, elevated, outlined",lastUpdated:"2026-05",overlapsWith:[],a11y:"Passes WCAG 2.1 AA.",notes:"",teams:["Checkout","Account","Search","Admin"]},
+  {name:"Tile",category:"Layout",instances:90,detachedPct:22,variants:"default",lastUpdated:"2024-08",overlapsWith:["Card (outlined)"],a11y:"Whole tile is clickable but not focusable.",notes:"Teams use it as a clickable Card.",teams:["Search","Marketing site"]},
+  {name:"Tabs",category:"Navigation",instances:340,detachedPct:3,variants:"line, contained",lastUpdated:"2026-04",overlapsWith:["SegmentedControl"],a11y:"Passes WCAG 2.1 AA, roving tabindex.",notes:"Switches between content panels.",teams:["Account","Admin"]},
+  {name:"SegmentedControl",category:"Navigation",instances:120,detachedPct:6,variants:"2–5 segments",lastUpdated:"2026-02",overlapsWith:["Tabs"],a11y:"Passes WCAG 2.1 AA (radio group semantics).",notes:"Changes a setting or filter in place, no panels.",teams:["Search","Checkout"]},
+  {name:"DataGrid",category:"Data",instances:38,detachedPct:11,variants:"beta",lastUpdated:"2026-07",overlapsWith:["Table"],a11y:"In review.",notes:"New, in beta. Will cover editable tables Table can't.",teams:["Admin"]},
+  {name:"Table",category:"Data",instances:260,detachedPct:5,variants:"default, compact",lastUpdated:"2026-03",overlapsWith:["DataGrid"],a11y:"Passes WCAG 2.1 AA.",notes:"Read-only tables.",teams:["Account","Admin"]},
+];
+let inv = LIBRARY.map(c => ({...c, status:"Active"}));
+let proposals = [], decisions = [], turns = [];
+let sample = null, live = false, busy = false, ctl = null, pid = 0, demoRunning = false;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ACT = {merge:"Merge",deprecate:"Deprecate",update:"Update",keep:"Keep"};
+
+function renderLib(flashName){
+  const cats = [...new Set(inv.map(c => c.category))];
+  let h = "";
+  for (const cat of cats){
+    h += `<tr class="cat"><td colspan="4">${esc(cat)}</td></tr>`;
+    for (const c of inv.filter(x => x.category === cat)){
+      const cls = c.status === "Active" ? "" : c.status === "Deprecated" ? "dep" : "changed";
+      h += `<tr${c.name===flashName?' class="flash"':""}><td class="name">${esc(c.name)}<small>${esc(c.variants)}</small></td>
+        <td class="n">${c.instances.toLocaleString("en")}</td>
+        <td class="n${c.detachedPct>=20?" hot":""}">${c.detachedPct}%</td>
+        <td><span class="st ${cls}"${c.status==="Merging" ? ` title="Merging into ${esc(proposals.find(p=>p.status==="approved"&&p.component===c.name)?.target||"")}"` : ""}>${esc(c.status)}</span></td></tr>`;
+    }
+  }
+  $("libBody").innerHTML = h;
+  $("libCount").textContent = inv.length + " components";
+}
+
+function md(s){
+  const inline = t => t.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/`([^`]+)`/g,"<code>$1</code>");
+  let html = "", inList = false;
+  for (const l of esc(s).split("\n")){
+    const m = l.match(/^\s*[-*•]\s+(.*)/);
+    if (m){ if(!inList){html+="<ul>";inList=true;} html += "<li>"+inline(m[1])+"</li>"; }
+    else { if(inList){html+="</ul>";inList=false;} if(l.trim()) html += "<p>"+inline(l)+"</p>"; }
+  }
+  return html + (inList ? "</ul>" : "");
+}
+
+function addUser(text){
+  $("logEmpty")?.remove();
+  const d = document.createElement("div"); d.className = "msg user"; d.textContent = text;
+  $("log").append(d); scrollLog();
+}
+function addAgent(){
+  $("logEmpty")?.remove();
+  const d = document.createElement("div"); d.className = "msg agent";
+  d.innerHTML = `<div class="who">Agent</div><ul class="steps"></ul><div class="body"><p class="thinking">Thinking…</p></div>`;
+  $("log").append(d); scrollLog();
+  return {
+    step(label, kind=""){ const li = document.createElement("li"); if(kind) li.className = kind; li.textContent = label; d.querySelector(".steps").append(li); scrollLog(); },
+    text(t){ d.querySelector(".body").innerHTML = md(t); scrollLog(); },
+    note(t){ d.querySelector(".body").insertAdjacentHTML("beforeend", `<p class="thinking">${esc(t)}</p>`); scrollLog(); },
+    clearThinking(){ const t = d.querySelector(".body .thinking"); if (t && d.querySelector(".body").children.length===1) d.querySelector(".body").innerHTML=""; }
+  };
+}
+function scrollLog(){ const l = $("log"); l.scrollTop = l.scrollHeight; }
+
+function findComp(name){ return inv.find(c => c.name.toLowerCase() === String(name||"").trim().toLowerCase()); }
+function lev(a,b){ a=a.toLowerCase(); b=b.toLowerCase(); const dp=Array.from({length:a.length+1},(_,i)=>[i,...Array(b.length).fill(0)]); for(let j=1;j<=b.length;j++)dp[0][j]=j; for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1)); return dp[a.length][b.length]; }
+function suggest(name){ return inv.map(c=>[c.name,lev(name,c.name)]).sort((x,y)=>x[1]-y[1]).slice(0,2).map(x=>x[0]); }
+
+function addProposal(p){
+  const target = p.action === "merge" ? findComp(p.target) : null;
+  const prop = {id: ++pid, component: findComp(p.component).name, action: p.action, target: target?.name || null,
+    rationale: String(p.rationale||""), evidence: String(p.evidence||""), confidence: ["high","medium","low"].includes(p.confidence) ? p.confidence : "medium",
+    settle: String(p.whatWouldSettleIt||""), status: "pending"};
+  proposals.unshift(prop); renderQueue();
+  return prop;
+}
+function label(p){ return p.action==="merge" ? `${p.component} → ${p.target}` : p.component; }
+function phrase(p){ return p.action==="merge" ? `merge ${p.component} into ${p.target}` : `${p.action} ${p.component}`; }
+
+function renderQueue(){
+  const q = $("queue");
+  const waiting = proposals.filter(p => p.status === "pending").length;
+  $("qCount").textContent = waiting + " waiting";
+  if (!proposals.length){ q.innerHTML = `<div class="empty">No proposals yet. The agent's suggestions appear here with its confidence and evidence.</div>`; return; }
+  q.innerHTML = proposals.map(p => `
+    <article class="card ${p.status}" data-id="${p.id}">
+      <div class="card-top">
+        <div class="what"><span class="act">${ACT[p.action]}</span>${esc(label(p))}</div>
+        <span class="conf ${p.confidence}">${p.confidence}</span>
+      </div>
+      <div class="meter ${p.confidence}" role="img" aria-label="${p.confidence} confidence"><i></i></div>
+      <p>${esc(p.rationale)}</p>
+      ${p.confidence==="low" && p.settle ? `<p class="unsure">Agent is unsure. To settle it: ${esc(p.settle)}</p>` : ""}
+      ${p.evidence ? `<details><summary>Show evidence</summary><div>${esc(p.evidence)}</div></details>` : ""}
+      ${p.status==="pending" ? `
+        <div class="btns" data-role="btns">
+          <button class="primary" data-do="approve">Approve</button>
+          <button class="ghost" data-do="askreject">Reject</button>
+        </div>
+        <div class="reason" data-role="reason" hidden>
+          <label for="reason-${p.id}" hidden>Reason</label>
+          <input id="reason-${p.id}" placeholder="Why? The agent reads this next turn">
+          <button class="danger" data-do="reject">Reject</button>
+        </div>` : `
+        <div class="outcome">${p.status==="approved" ? "✓ Approved · applied to library" : "Rejected" + (p.note ? " · " + esc(p.note) : "")}
+          <button class="link" data-do="undo">Undo</button></div>`}
+    </article>`).join("");
+}
+
+$("queue").addEventListener("click", e => {
+  const b = e.target.closest("button[data-do]"); if (!b) return;
+  const card = b.closest(".card"); const p = proposals.find(x => x.id === +card.dataset.id); if (!p) return;
+  const act = b.dataset.do;
+  if (act === "askreject"){ card.querySelector('[data-role="btns"]').hidden = true; const r = card.querySelector('[data-role="reason"]'); r.hidden = false; r.querySelector("input").focus(); return; }
+  const c = findComp(p.component);
+  if (act === "approve"){
+    p.prev = c.status; p.status = "approved";
+    c.status = p.action==="merge" ? "Merging" : p.action==="deprecate" ? "Deprecated" : p.action==="update" ? "Updating" : "Reviewed";
+    decisions.push(`approved "${phrase(p)}".`);
+    renderLib(c.name);
+  } else if (act === "reject"){
+    p.note = card.querySelector("input").value.trim(); p.status = "rejected";
+    decisions.push(`rejected "${phrase(p)}"${p.note ? ` (reason: ${p.note})` : ""}.`);
+  } else if (act === "undo"){
+    if (p.status === "approved"){ c.status = p.prev || "Active"; renderLib(c.name); }
+    decisions.push(`undid their decision on "${phrase(p)}"; it is pending again.`);
+    p.status = "pending"; p.note = "";
+  }
+  renderQueue();
+});
+
+/* ---------- Agent tools (run in this page) ---------- */
+function makeTools(ui){
+  return [
+    { name:"list_components",
+      description:"Lists components in the library with usage numbers and current status. Optional category filter: Actions, Forms, Feedback, Layout, Navigation, Data. Returns an array.",
+      inputSchema:{type:"object",properties:{category:{type:"string"}}},
+      execute(input){
+        const cat = input.category ? String(input.category) : "";
+        const rows = inv.filter(c => !cat || c.category.toLowerCase() === cat.toLowerCase())
+          .map(({name,category,instances,detachedPct,lastUpdated,status}) => ({name,category,instances,detachedPct,lastUpdated,status,
+            pendingProposal: proposals.some(p => p.status==="pending" && p.component===name)}));
+        if (!rows.length){ ui.step(`No components in category "${cat}"`, "err"); throw new Error(`No category "${cat}". Categories: Actions, Forms, Feedback, Layout, Navigation, Data.`); }
+        ui.step(`Read ${rows.length} components${cat ? " in " + cat : ""}`);
+        return rows;
+      }},
+    { name:"get_component",
+      description:"Returns full details for one component: usage, detachment rate, overlaps, accessibility findings, notes, teams using it. Throws with close matches if the name is not found.",
+      inputSchema:{type:"object",properties:{name:{type:"string"}},required:["name"]},
+      execute(input){
+        const name = String(input.name||""); const c = findComp(name);
+        if (!c){ const s = suggest(name); ui.step(`Lookup failed: no component "${name}"`, "err");
+          throw new Error(`No component named "${name}". Closest matches: ${s.join(", ")}.`); }
+        ui.step(`Read details of ${c.name}`);
+        return c;
+      }},
+    { name:"propose_change",
+      description:"Queues a proposed change for human approval. It does NOT change the library; a person approves or rejects it. action: keep | merge | deprecate | update. For merge, target is the component that remains. confidence: high | medium | low. For low confidence, fill whatWouldSettleIt.",
+      inputSchema:{type:"object",properties:{
+        component:{type:"string"}, action:{type:"string",enum:["keep","merge","deprecate","update"]}, target:{type:"string"},
+        rationale:{type:"string",description:"1-2 sentences for the reviewer"}, evidence:{type:"string",description:"The numbers and findings this rests on"},
+        confidence:{type:"string",enum:["high","medium","low"]}, whatWouldSettleIt:{type:"string"}},
+        required:["component","action","rationale","evidence","confidence"]},
+      execute(input){
+        const c = findComp(input.component);
+        if (!c){ ui.step(`Proposal refused: unknown component "${input.component}"`, "err"); throw new Error(`Unknown component "${input.component}". Look it up with get_component first.`); }
+        if (!ACT[input.action]) throw new Error("action must be keep, merge, deprecate or update.");
+        if (input.action === "merge"){ const t = findComp(input.target);
+          if (!t || t.name === c.name){ ui.step(`Proposal refused: bad merge target "${input.target||""}"`, "err"); throw new Error("merge needs a target that is a different, existing component."); } }
+        if (proposals.some(p => p.status==="pending" && p.component===c.name)){ ui.step(`Skipped: ${c.name} already has a pending proposal`, "err"); throw new Error(`A proposal for ${c.name} is already waiting for approval.`); }
+        if (proposals.some(p => p.status==="rejected" && p.component===c.name && p.action===input.action)) {
+          ui.step(`Refused: reviewer already rejected this for ${c.name}`, "err"); throw new Error("The reviewer already rejected this exact change. Do not propose it again unless they ask."); }
+        const p = addProposal(input);
+        ui.step(`Proposed: ${phrase(p)} (${p.confidence})`, "propose");
+        return {queued:true, note:"Waiting for human approval. Nothing has been applied."};
+      }}
+  ];
+}
+
+const RULES = `You are an audit agent for "Northwind DS", a product design system (fictional data). You help the design-system owner decide what to keep, merge, deprecate or update.
+Rules:
+1. Read data with the tools before you propose anything. Never invent numbers; cite the ones the tools returned.
+2. You cannot change the library. propose_change only queues a proposal for a person. Never say a change was made or applied.
+3. Set confidence honestly. High only when usage, overlap and accessibility findings clearly agree. Low when the components serve different purposes or the data is thin; then fill whatWouldSettleIt.
+4. If a lookup fails, the error lists close matches. If one is an obvious match, use it and say you assumed it. If not, ask the user.
+5. If a request is ambiguous or not about this library, ask one short question instead of proposing.
+6. Respect the reviewer's earlier decisions shown in brackets. Do not repeat a rejected proposal.
+7. At most 4 proposals per request. Proposing "keep" is fine when two components look alike but do different jobs.
+8. Reply in plain text, 2–5 short sentences or a few bullets, ** for bold allowed. End by saying how many proposals are waiting for approval, if any.`;
+
+async function send(text){
+  text = text.trim();
+  if (busy || !text) return;
+  if (!live){ if (!demoRunning) playDemo(); return; }
+  const ctx = decisions.length ? `[Since your last reply the reviewer ${decisions.join(" Also ")}]\n\n` : "";
+  decisions = [];
+  addUser(text);
+  turns.push({role:"user", content: ctx + text});
+  if (turns.length > 12) turns = turns.slice(-12);
+  while (turns[0] && turns[0].role !== "user") turns.shift();
+  const ui = addAgent();
+  setBusy(true); ctl = new AbortController();
+  try {
+    const res = await sample([{role:"user", content:RULES}, ...turns], {
+      tools: makeTools(ui), modelTier:"quick", signal: ctl.signal,
+      onText: ({text}) => ui.text(text)
+    });
+    turns.push({role:"assistant", content: res.text});
+    if (res.truncated) ui.note("The answer was cut short. Ask about fewer components at a time.");
+  } catch(e){
+    if (e && e.text) ui.text(e.text); else ui.clearThinking();
+    const code = e && e.code;
+    if (code === "cancelled") ui.note("Stopped. Proposals already queued stay in the queue.");
+    else if (["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed","tools_unavailable"].includes(code)){
+      ui.note("The live agent isn't available here. You can watch the recorded run instead.");
+      goDemo("The live agent isn't available in this view. You can watch a recorded run of the same workflow and approve or reject its proposals yourself.");
+    }
+    else if (code === "rate_limited") ui.note("Too many requests right now. Wait a minute and send again.");
+    else if (code === "session_expired") ui.note("Your Claude session expired. Sign in again, then resend.");
+    else if (code === "refused") ui.note("The agent declined that request. Try rephrasing it as a question about the library.");
+    else ui.note("The connection dropped before the agent finished. Send the message again to retry.");
+  } finally { setBusy(false); }
+}
+
+function setBusy(b){
+  busy = b; $("sendBtn").disabled = b; $("stopBtn").hidden = !b || demoRunning;
+  document.querySelectorAll(".chip").forEach(c => c.disabled = b);
+}
+
+/* ---------- Recorded run (fallback when live agent is unavailable) ---------- */
+const wait = ms => new Promise(r => setTimeout(r, matchMedia("(prefers-reduced-motion: reduce)").matches ? Math.min(ms,150) : ms));
+async function playDemo(){
+  if (demoRunning || busy) return;
+  demoRunning = true; setBusy(true); $("playDemo").disabled = true;
+  addUser("Find duplicates across the library.");
+  const ui = addAgent();
+  const tools = Object.fromEntries(makeTools(ui).map(t => [t.name, t]));
+  const call = async (name, input, ms=650) => { await wait(ms); try { return tools[name].execute(input); } catch(e){ return e; } };
+  await call("list_components", {});
+  await call("get_component", {name:"Dropdwn"});
+  await call("get_component", {name:"Dropdown"}, 500);
+  await call("get_component", {name:"Select"});
+  await call("get_component", {name:"Snackbar"});
+  await call("get_component", {name:"Toast"});
+  await call("get_component", {name:"Alert"});
+  await call("get_component", {name:"Banner"});
+  await call("propose_change", {component:"Dropdown", action:"merge", target:"Select", confidence:"high",
+    rationale:"Select already does everything Dropdown does, with keyboard support. Dropdown is legacy and was never formally retired.",
+    evidence:"Dropdown: 140 instances, 42% detached, last updated 2023-01, no keyboard navigation of options. Select: 480 instances, 6% detached, passes WCAG 2.1 AA."}, 900);
+  await call("propose_change", {component:"Snackbar", action:"merge", target:"Toast", confidence:"medium",
+    rationale:"Same job as Toast and not announced to screen readers. Toast needs a 'with action' variant first.",
+    evidence:"Snackbar: 44 instances, 27% detached, only used by Admin. Toast: 300 instances, announced via aria-live. Snackbar's 'with action' variant has no Toast equivalent yet."});
+  await call("propose_change", {component:"Alert", action:"keep", confidence:"low",
+    rationale:"Alert and Banner look alike, but Alert is inline next to its content while Banner is page-level. Merging could lose that distinction.",
+    evidence:"Alert: 75 instances, inline in forms and cards. Banner: 160 instances, full width, persistent. Both pass WCAG 2.1 AA.",
+    whatWouldSettleIt:"Check with Checkout and Admin whether they use Alert for field-level messages. If they do, keep both and align the styling instead."});
+  await wait(600);
+  const answer = "I compared all 17 components. I first misread \"Dropdwn\", the lookup failed and I used the closest match, Dropdown.\n- **Dropdown → Select**: clear duplicate, high confidence.\n- **Snackbar → Toast**: likely duplicate, but Toast needs an action variant first.\n- **Alert vs Banner**: I'm unsure. They look alike but do different jobs, so I suggest keeping both for now.\n3 proposals are waiting for your approval. Nothing in the library has changed.";
+  let shown = "";
+  for (const w of answer.split(/(\s+)/)){ shown += w; ui.text(shown); await wait(18); }
+  turns.push({role:"user", content:"Find duplicates across the library."},{role:"assistant", content:answer});
+  demoRunning = false; setBusy(false); $("playDemo").disabled = false; $("playDemo").textContent = "Replay recorded run";
+}
+
+function goDemo(msg){
+  live = false;
+  $("demoText").textContent = msg; $("demoBanner").hidden = false;
+  $("modeLabel").textContent = "Recorded run";
+  $("foot").textContent = "Recorded run. Approve and reject still work, and the library updates.";
+  $("msg").placeholder = "Press Send to play the recorded run";
+}
+
+/* ---------- Wiring ---------- */
+$("composer").addEventListener("submit", e => { e.preventDefault(); const v = $("msg").value; $("msg").value = ""; send(v); });
+$("msg").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); $("composer").requestSubmit(); } });
+$("stopBtn").addEventListener("click", () => ctl?.abort());
+$("chips").addEventListener("click", e => { const c = e.target.closest(".chip"); if (c) send(c.dataset.q); });
+$("playDemo").addEventListener("click", playDemo);
+
+/* ---------- Theme toggle ---------- */
+const root = document.documentElement, themeBtn = $("themeBtn"), darkMQ = matchMedia("(prefers-color-scheme: dark)");
+const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+const effTheme = () => root.getAttribute("data-theme") || (darkMQ.matches ? "dark" : "light");
+function paintTheme(){ const d = effTheme() === "dark"; themeBtn.innerHTML = d ? SUN : MOON; themeBtn.setAttribute("aria-label", d ? "Switch to light mode" : "Switch to dark mode"); themeBtn.title = themeBtn.getAttribute("aria-label"); }
+try { const t = localStorage.getItem("dsa-theme"); if (t === "light" || t === "dark") root.setAttribute("data-theme", t); } catch {}
+themeBtn.addEventListener("click", () => { const n = effTheme() === "dark" ? "light" : "dark"; root.setAttribute("data-theme", n); try { localStorage.setItem("dsa-theme", n); } catch {} paintTheme(); });
+darkMQ.addEventListener?.("change", paintTheme);
+new MutationObserver(paintTheme).observe(root, {attributes:true, attributeFilter:["data-theme"]});
+paintTheme();
+
+renderLib(); renderQueue();
+(async () => {
+  try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch { sample = null; }
+  let tools = false;
+  if (sample){ try { tools = !!(await sample.limits()).tools; } catch { tools = false; } }
+  if (sample && tools){
+    live = true; $("modeLabel").textContent = "Live · Claude"; $("modePill").classList.add("live");
+  } else {
+    goDemo("The live agent isn't available in this view. You can watch a recorded run of the same workflow and approve or reject its proposals yourself.");
+  }
+})();
+</script>

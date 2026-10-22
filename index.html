@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design System Audit Agent · recorded run</title>
+<style>body{margin:0;background:#f6f9fc;font-family:system-ui,sans-serif}main{max-width:1200px;margin:0 auto;padding:24px 16px}</style>
+</head>
+<body>
+<main>
+<div class="dsa" id="dsa-embed" data-dsa-theme="light">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Design System Audit Agent · recorded run. Every rule is scoped to .dsa so the site theme is untouched. */
+.dsa{--bg:#ffffff;--ground:#f6f9fc;--surface:#ffffff;--sunk:#f6f9fc;--ink:#0a2540;--text:#425466;--muted:#6b7c93;--line:#e3e8ee;--accent:#635bff;--accent-ink:#ffffff;--accent-soft:#efeeff;--good:#00875f;--good-soft:#e3f7ef;--pending:#b25e09;--pending-soft:#fdf1e1;--danger:#df1b41;--danger-soft:#fde8ec;--bubble:#0a2540;--bubble-ink:#ffffff;--glow:rgba(99,91,255,.16);--shadow:0 2px 5px -1px rgba(50,50,93,.16),0 1px 3px -1px rgba(0,0,0,.12);--shadow-lg:0 13px 27px -5px rgba(50,50,93,.16),0 8px 16px -8px rgba(0,0,0,.16);
+  container-type:inline-size;display:block;position:relative;margin:8px 0 24px;padding:14px;border-radius:16px;background:var(--ground);color:var(--ink);font:15px/1.55 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-align:left;letter-spacing:normal;overflow:hidden;color-scheme:light}
+.dsa[data-dsa-theme="dark"]{--bg:#0b1a2e;--ground:#0d1f36;--surface:#112742;--sunk:#0e2139;--ink:#f0f4f8;--text:#b8c6d6;--muted:#8a9bb0;--line:#20395a;--accent:#8b85ff;--accent-ink:#0b1a2e;--accent-soft:#232a5e;--good:#3fd69a;--good-soft:#0f3833;--pending:#f5b45e;--pending-soft:#3a2b14;--danger:#ff7d95;--danger-soft:#3d1624;--bubble:#635bff;--bubble-ink:#ffffff;--glow:rgba(99,91,255,.30);--shadow:0 2px 6px -1px rgba(0,0,0,.45),0 1px 3px -1px rgba(0,0,0,.35);--shadow-lg:0 14px 30px -6px rgba(0,0,0,.55),0 8px 16px -8px rgba(0,0,0,.45);color-scheme:dark}
+.dsa *,.dsa *::before,.dsa *::after{box-sizing:border-box}
+.dsa::before{content:"";position:absolute;inset:0 0 auto auto;width:70%;height:220px;pointer-events:none;background:radial-gradient(60% 100% at 85% 0%,var(--glow),transparent 70%)}
+.dsa [hidden]{display:none!important}
+.dsa p,.dsa h2,.dsa h3,.dsa ul,.dsa ol,.dsa table{margin:0;padding:0}
+.dsa button{font:600 14px/1 "Inter",system-ui,sans-serif;border-radius:99px;border:1px solid transparent;padding:11px 16px;cursor:pointer;white-space:nowrap;text-transform:none;letter-spacing:normal;min-height:0;box-shadow:none;background:none;color:inherit;margin:0}
+.dsa button:focus-visible,.dsa input:focus-visible,.dsa summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.dsa .primary{background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 10px -3px rgba(99,91,255,.5)}
+.dsa .ghost{background:var(--surface);border-color:var(--line);color:var(--ink);box-shadow:var(--shadow)}
+.dsa .danger{background:var(--surface);border-color:var(--danger);color:var(--danger)}
+.dsa button:disabled{opacity:.5;cursor:not-allowed}
+/* toolbar */
+.dsa .bar{position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.dsa .pills{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+.dsa .pill{font:500 13px/1 "Inter",system-ui,sans-serif;padding:8px 12px;border-radius:99px;background:var(--surface);border:1px solid var(--line);color:var(--text);box-shadow:var(--shadow);display:inline-flex;align-items:center;gap:7px}
+.dsa .pill i{width:7px;height:7px;border-radius:50%;background:var(--muted);display:block}
+.dsa .actions{display:flex;gap:8px;align-items:center}
+.dsa .theme{width:38px;height:38px;padding:0;display:grid;place-items:center;background:var(--surface);border-color:var(--line);color:var(--ink);box-shadow:var(--shadow)}
+.dsa .theme svg{width:17px;height:17px;display:block}
+/* grid */
+.dsa .grid{position:relative;display:grid;gap:14px;grid-template-columns:minmax(0,1fr);grid-template-areas:"agent" "queue" "lib"}
+@container (min-width:720px){.dsa .grid{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);grid-template-areas:"agent queue" "lib lib"}}
+@container (min-width:1080px){.dsa .grid{grid-template-columns:minmax(0,.95fr) minmax(0,1.3fr) minmax(0,1fr);grid-template-areas:"lib agent queue"}}
+.dsa .pane{background:var(--surface);border-radius:12px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.dsa .lib{grid-area:lib}.dsa .chat{grid-area:agent}.dsa .qpane{grid-area:queue}
+.dsa .pane-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.dsa .pane-h h3{font:600 15px/1.2 "Inter",system-ui,sans-serif;margin:0;color:var(--ink);letter-spacing:-.005em;text-transform:none}
+.dsa .pane-h span{font:500 13px/1 "Inter",system-ui,sans-serif;color:var(--muted)}
+.dsa .count{font-weight:600!important;font-size:12px!important;padding:6px 10px;border-radius:99px;background:var(--pending-soft);color:var(--pending)!important}
+/* library */
+.dsa .tbl{overflow:auto;max-height:520px}
+.dsa table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums;border:0;background:none}
+.dsa th{font:500 12px/1 "Inter",system-ui,sans-serif;color:var(--muted);text-align:left;padding:11px 8px 9px;position:sticky;top:0;background:var(--surface);z-index:1;border:0;text-transform:none;letter-spacing:normal}
+.dsa td{padding:8px;border:0;border-top:1px solid var(--line);vertical-align:top;color:var(--text);background:none}
+.dsa th:first-child,.dsa td:first-child{padding-left:16px}.dsa th:last-child,.dsa td:last-child{padding-right:16px}
+.dsa .n{text-align:right}
+.dsa tr.cat td{background:var(--sunk);font:600 11px/1 "Inter",system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding-block:8px}
+.dsa td.name{font-weight:600;color:var(--ink)}
+.dsa td.name small{display:block;font-weight:400;color:var(--muted);font-size:12px;line-height:1.4}
+.dsa .hot{color:var(--pending)!important;font-weight:600}
+.dsa .st{display:inline-block;font:500 11.5px/1.3 "Inter",system-ui,sans-serif;padding:3px 7px;border-radius:5px;background:var(--sunk);color:var(--text);white-space:nowrap}
+.dsa .st.changed{background:var(--accent-soft);color:var(--accent)}
+.dsa .st.dep{background:var(--danger-soft);color:var(--danger)}
+.dsa tr.flash td{animation:dsaflash 1.6s ease}
+@keyframes dsaflash{0%{background:var(--accent-soft)}100%{background:transparent}}
+/* chat */
+.dsa .log{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:260px;max-height:560px}
+.dsa .msg{max-width:94%;min-width:0}
+.dsa .msg.user{align-self:flex-end;background:var(--bubble);color:var(--bubble-ink);padding:10px 14px;border-radius:12px 12px 3px 12px;font-size:14.5px}
+.dsa .msg.agent{align-self:flex-start;background:var(--sunk);border:1px solid var(--line);border-radius:12px 12px 12px 3px;padding:14px 16px}
+.dsa .who{display:flex;align-items:center;gap:8px;font:600 13px/1 "Inter",system-ui,sans-serif;margin-bottom:10px;color:var(--ink)}
+.dsa .who::before{content:"";width:20px;height:20px;border-radius:6px;background:linear-gradient(135deg,#635bff,#00c2ff)}
+.dsa .msg p{margin:0 0 8px;color:var(--text);font-size:14.5px;line-height:1.55}.dsa .msg p:last-child{margin:0}
+.dsa .msg strong{color:var(--ink)}
+.dsa .msg ul{margin:0 0 8px;padding-left:18px;color:var(--text);font-size:14.5px;list-style:disc}
+.dsa .msg li{margin:0}
+.dsa .steps{list-style:none!important;margin:0 0 12px!important;padding:10px 12px!important;background:var(--surface);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;gap:6px}
+.dsa .steps:empty{display:none}
+.dsa .steps li{font:13px/1.35 "Inter",system-ui,sans-serif;color:var(--text);display:flex;gap:8px;align-items:flex-start;min-width:0;list-style:none}
+.dsa .steps li::before{content:"✓";flex:none;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font:700 10px/1 "Inter",system-ui,sans-serif;background:var(--good-soft);color:var(--good);margin-top:1px}
+.dsa .steps li.propose::before{content:"→";background:var(--accent-soft);color:var(--accent)}
+.dsa .steps li.err{color:var(--danger)}
+.dsa .steps li.err::before{content:"!";background:var(--danger-soft);color:var(--danger)}
+.dsa .note{color:var(--muted)!important;font-style:italic}
+.dsa .empty{color:var(--muted);font-size:14px;padding:4px 2px}
+.dsa .chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 14px}
+.dsa .chip{font:500 13px/1.2 "Inter",system-ui,sans-serif;background:var(--accent-soft);color:var(--accent);padding:8px 12px}
+.dsa .foot{font:13px/1.45 "Inter",system-ui,sans-serif;color:var(--muted);padding:12px 16px 14px;border-top:1px solid var(--line)}
+/* queue */
+.dsa .queue{padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;max-height:620px;background:var(--sunk);flex:1}
+.dsa .card{border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--surface);box-shadow:var(--shadow)}
+.dsa .card.rejected{opacity:.72}
+.dsa .card-top{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.dsa .what{font:600 16px/1.3 "Inter",system-ui,sans-serif;letter-spacing:-.01em;min-width:0;color:var(--ink)}
+.dsa .act{display:block;font:600 11.5px/1 "Inter",system-ui,sans-serif;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+.dsa .conf{font:600 12px/1 "Inter",system-ui,sans-serif;padding:5px 9px;border-radius:99px;white-space:nowrap;text-transform:capitalize}
+.dsa .conf.high{background:var(--good-soft);color:var(--good)}
+.dsa .conf.medium{background:var(--sunk);color:var(--text);border:1px solid var(--line)}
+.dsa .conf.low{background:var(--pending-soft);color:var(--pending)}
+.dsa .meter{height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+.dsa .meter i{display:block;height:100%;border-radius:4px}
+.dsa .meter.high i{width:88%;background:var(--good)}.dsa .meter.medium i{width:60%;background:var(--text)}.dsa .meter.low i{width:30%;background:var(--pending)}
+.dsa .card p{margin:0;font-size:14px;line-height:1.5;color:var(--text)}
+.dsa .unsure{font-size:13px!important;color:var(--pending)!important;background:var(--pending-soft);border-radius:6px;padding:8px 10px}
+.dsa details{font-size:13px;color:var(--text)}
+.dsa summary{cursor:pointer;font:500 13px "Inter",system-ui,sans-serif;color:var(--accent)}
+.dsa details div{margin-top:6px}
+.dsa .btns,.dsa .reason{display:flex;flex-wrap:wrap;gap:8px}
+.dsa .btns button,.dsa .reason button{padding:9px 15px;font-size:13.5px}
+.dsa .reason input{flex:1 1 160px;min-width:0;font:13.5px "Inter",system-ui,sans-serif;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);margin:0;height:auto;box-shadow:none}
+.dsa .outcome{font:500 13px/1.4 "Inter",system-ui,sans-serif;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dsa .card.approved .outcome{color:var(--good)}.dsa .card.rejected .outcome{color:var(--muted)}
+.dsa .link{background:none!important;border:0;padding:0!important;margin-left:auto;color:var(--accent);font:500 13px "Inter",system-ui,sans-serif;box-shadow:none}
+@container (max-width:719px){.dsa .queue,.dsa .log{max-height:none}}
+.dsa .lib{container-type:inline-size}
+@container (max-width:420px){.dsa .lib th:nth-child(2),.dsa .lib td:nth-child(2){display:none}}
+@media (prefers-reduced-motion:reduce){.dsa tr.flash td{animation:none}}
+</style>
+
+<div class="bar">
+  <div class="pills"><span class="pill"><i></i>Recorded run</span><span class="pill">Northwind DS · fictional data</span></div>
+  <div class="actions">
+    <button class="primary" type="button" data-dsa="play">Play the run</button>
+    <button class="theme" type="button" data-dsa="theme" aria-label="Switch to dark mode"></button>
+  </div>
+</div>
+
+<div class="grid">
+  <section class="pane chat" aria-label="Agent">
+    <div class="pane-h"><h3>Agent</h3><span>Proposes, never applies</span></div>
+    <div class="log" data-dsa="log" aria-live="polite"><div class="empty" data-dsa="logEmpty">Press “Play the run” to watch the agent audit the library. Its proposals land in the approval queue, where you decide.</div></div>
+    <div class="chips" data-dsa="chips">
+      <button class="chip" type="button">Find duplicates across the library</button>
+    </div>
+    <div class="foot" data-dsa="foot">A recorded run of the live prototype. Approve, reject and undo work for real, and the library updates.</div>
+  </section>
+  <section class="pane qpane" aria-label="Approval queue">
+    <div class="pane-h"><h3>Approval queue</h3><span class="count" data-dsa="qCount">0 waiting</span></div>
+    <div class="queue" data-dsa="queue"></div>
+  </section>
+  <section class="pane lib" aria-label="Component library">
+    <div class="pane-h"><h3>Library</h3><span data-dsa="libCount"></span></div>
+    <div class="tbl"><table><thead><tr><th>Component</th><th class="n">Instances</th><th class="n">Detached</th><th>Status</th></tr></thead><tbody data-dsa="libBody"></tbody></table></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var root = document.getElementById("dsa-embed");
+  if (!root || root.dataset.ready) return; root.dataset.ready = "1";
+  var q = function(k){ return root.querySelector('[data-dsa="'+k+'"]'); };
+  var LIB = [
+    ["Button","Actions",1840,2,"primary, secondary, ghost, danger"],["IconButton","Actions",612,4,"sm, md, lg"],["LinkButton","Actions",95,31,"default"],
+    ["TextField","Forms",920,3,"default, with icon, with helper text"],["SearchField","Forms",210,18,"default"],["Select","Forms",480,6,"single, multi, searchable"],["Dropdown","Forms",140,42,"single"],
+    ["Toast","Feedback",300,5,"info, success, error"],["Snackbar","Feedback",44,27,"default, with action"],["Banner","Feedback",160,7,"info, warning, critical"],["Alert","Feedback",75,9,"info, warning, error"],
+    ["Card","Layout",1100,8,"default, elevated, outlined"],["Tile","Layout",90,22,"default"],
+    ["Tabs","Navigation",340,3,"line, contained"],["SegmentedControl","Navigation",120,6,"2–5 segments"],
+    ["DataGrid","Data",38,11,"beta"],["Table","Data",260,5,"default, compact"]
+  ].map(function(r){ return {name:r[0],category:r[1],instances:r[2],detached:r[3],variants:r[4],status:"Active"}; });
+  var ACT = {merge:"Merge",deprecate:"Deprecate",update:"Update",keep:"Keep"};
+  var proposals = [], pid = 0, running = false, played = false;
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function find(n){ n=String(n).toLowerCase(); for (var i=0;i<LIB.length;i++) if (LIB[i].name.toLowerCase()===n) return LIB[i]; return null; }
+  function wait(ms){ var r = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; return new Promise(function(res){ setTimeout(res, r?Math.min(ms,120):ms); }); }
+
+  function renderLib(flash){
+    var cats=[], h="";
+    LIB.forEach(function(c){ if (cats.indexOf(c.category)<0) cats.push(c.category); });
+    cats.forEach(function(cat){
+      h += '<tr class="cat"><td colspan="4">'+esc(cat)+'</td></tr>';
+      LIB.filter(function(c){return c.category===cat;}).forEach(function(c){
+        var cls = c.status==="Active" ? "" : c.status==="Deprecated" ? "dep" : "changed";
+        h += '<tr'+(c.name===flash?' class="flash"':'')+'><td class="name">'+esc(c.name)+'<small>'+esc(c.variants)+'</small></td><td class="n">'+c.instances.toLocaleString("en")+'</td><td class="n'+(c.detached>=20?' hot':'')+'">'+c.detached+'%</td><td><span class="st '+cls+'">'+esc(c.status)+'</span></td></tr>';
+      });
+    });
+    q("libBody").innerHTML = h; q("libCount").textContent = LIB.length + " components";
+  }
+  function label(p){ return p.action==="merge" ? p.component+" → "+p.target : p.component; }
+  function renderQueue(){
+    var waiting = proposals.filter(function(p){return p.status==="pending";}).length;
+    q("qCount").textContent = waiting + " waiting";
+    if (!proposals.length){ q("queue").innerHTML = '<div class="empty">No proposals yet. Each one arrives with a confidence level and the evidence behind it.</div>'; return; }
+    q("queue").innerHTML = proposals.map(function(p){
+      var body = '<div class="card-top"><div class="what"><span class="act">'+ACT[p.action]+'</span>'+esc(label(p))+'</div><span class="conf '+p.confidence+'">'+p.confidence+'</span></div>'
+        + '<div class="meter '+p.confidence+'"><i></i></div><p>'+esc(p.rationale)+'</p>'
+        + (p.confidence==="low" && p.settle ? '<p class="unsure">Agent is unsure. To settle it: '+esc(p.settle)+'</p>' : '')
+        + '<details><summary>Show evidence</summary><div>'+esc(p.evidence)+'</div></details>';
+      if (p.status==="pending") body += '<div class="btns" data-role="btns"><button class="primary" type="button" data-do="approve">Approve</button><button class="ghost" type="button" data-do="askreject">Reject</button></div>'
+        + '<div class="reason" data-role="reason" hidden><input type="text" aria-label="Reason" placeholder="Why? The agent reads this next turn"><button class="danger" type="button" data-do="reject">Reject</button></div>';
+      else body += '<div class="outcome">'+(p.status==="approved" ? "✓ Approved · applied to library" : "Rejected"+(p.note?" · "+esc(p.note):""))+'<button class="link" type="button" data-do="undo">Undo</button></div>';
+      return '<article class="card '+p.status+'" data-id="'+p.id+'">'+body+'</article>';
+    }).join("");
+  }
+  q("queue").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-do]"); if (!b) return;
+    var card = b.closest(".card"); var p = proposals.filter(function(x){return x.id===+card.dataset.id;})[0]; if (!p) return;
+    var c = find(p.component), act = b.dataset.do;
+    if (act==="askreject"){ card.querySelector('[data-role="btns"]').hidden = true; var r = card.querySelector('[data-role="reason"]'); r.hidden = false; r.querySelector("input").focus(); return; }
+    if (act==="approve"){ p.prev = c.status; p.status = "approved"; c.status = p.action==="merge" ? "Merging" : p.action==="deprecate" ? "Deprecated" : p.action==="update" ? "Updating" : "Reviewed"; renderLib(c.name); }
+    else if (act==="reject"){ p.note = card.querySelector("input").value.trim(); p.status = "rejected"; }
+    else if (act==="undo"){ if (p.status==="approved"){ c.status = p.prev || "Active"; renderLib(c.name); } p.status = "pending"; p.note = ""; }
+    renderQueue();
+  });
+
+  function md(s){
+    var inline = function(t){ return t.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>"); };
+    var html = "", list = false;
+    esc(s).split("\n").forEach(function(l){ var m = l.match(/^- (.*)/);
+      if (m){ if(!list){html+="<ul>";list=true;} html += "<li>"+inline(m[1])+"</li>"; }
+      else { if(list){html+="</ul>";list=false;} if (l.trim()) html += "<p>"+inline(l)+"</p>"; } });
+    return html + (list?"</ul>":"");
+  }
+  function scroll(){ var l=q("log"); l.scrollTop = l.scrollHeight; }
+  function addUser(t){ var e=q("logEmpty"); if(e) e.remove(); var d=document.createElement("div"); d.className="msg user"; d.textContent=t; q("log").appendChild(d); scroll(); }
+  function addAgent(){ var d=document.createElement("div"); d.className="msg agent"; d.innerHTML='<div class="who">Agent</div><ul class="steps"></ul><div class="body"><p class="note">Thinking…</p></div>'; q("log").appendChild(d); scroll();
+    return { step:function(t,k){ var li=document.createElement("li"); if(k) li.className=k; li.textContent=t; d.querySelector(".steps").appendChild(li); scroll(); },
+             text:function(t){ d.querySelector(".body").innerHTML = md(t); scroll(); } }; }
+
+  var RUN = [
+    ["step","Read 17 components"],
+    ["step","Lookup failed: no component “Dropdwn”. Closest: Dropdown","err"],
+    ["step","Read details of Dropdown"],["step","Read details of Select"],["step","Read details of Snackbar"],["step","Read details of Toast"],["step","Read details of Alert"],["step","Read details of Banner"],
+    ["prop",{component:"Dropdown",action:"merge",target:"Select",confidence:"high",rationale:"Select already does everything Dropdown does, with keyboard support. Dropdown is legacy and was never formally retired.",evidence:"Dropdown: 140 instances, 42% detached, last updated 2023-01, no keyboard navigation of options. Select: 480 instances, 6% detached, passes WCAG 2.1 AA."}],
+    ["prop",{component:"Snackbar",action:"merge",target:"Toast",confidence:"medium",rationale:"Same job as Toast and not announced to screen readers. Toast needs a “with action” variant first.",evidence:"Snackbar: 44 instances, 27% detached, only used by Admin. Toast: 300 instances, announced via aria-live."}],
+    ["prop",{component:"Alert",action:"keep",confidence:"low",rationale:"Alert and Banner look alike, but Alert sits inline next to its content while Banner is page-level. Merging could lose that distinction.",evidence:"Alert: 75 instances, inline in forms and cards. Banner: 160 instances, full width, persistent. Both pass WCAG 2.1 AA.",settle:"check with Checkout and Admin whether they use Alert for field-level messages. If they do, keep both and align the styling."}]
+  ];
+  var ANSWER = "I compared all 17 components. My first lookup failed on a typo (“Dropdwn”), so I used the closest match, Dropdown.\n- **Dropdown → Select**: clear duplicate, high confidence.\n- **Snackbar → Toast**: likely duplicate, once Toast has an action variant.\n- **Alert vs Banner**: I'm unsure. They look alike but do different jobs, so I suggest keeping both for now.\n3 proposals are waiting for your approval. Nothing in the library has changed.";
+
+  async function play(){
+    if (running) return;
+    if (played){ q("foot").textContent = "This is a recorded run, so it always plays the same audit. The live version answers new questions and is available on request."; return; }
+    running = true; setBusy(true);
+    addUser("Find duplicates across the library.");
+    var ui = addAgent();
+    for (var i=0;i<RUN.length;i++){
+      var s = RUN[i];
+      await wait(s[0]==="prop" ? 850 : 520);
+      if (s[0]==="step") ui.step(s[1], s[2]);
+      else { var p = Object.assign({id:++pid,status:"pending"}, s[1]); proposals.unshift(p); renderQueue();
+        ui.step("Proposed: "+(p.action==="merge"?"merge "+p.component+" into "+p.target:p.action+" "+p.component)+" ("+p.confidence+")","propose"); }
+    }
+    await wait(500);
+    var words = ANSWER.split(/(\s+)/), shown = "";
+    for (var j=0;j<words.length;j++){ shown += words[j]; if (j%3===0 || j===words.length-1){ ui.text(shown); await wait(30); } }
+    running = false; played = true; setBusy(false);
+    q("play").textContent = "Played";
+  }
+  function setBusy(b){ q("play").disabled = b; root.querySelectorAll(".chip").forEach(function(c){ c.disabled = b; }); }
+  q("play").addEventListener("click", play);
+  q("chips").addEventListener("click", function(e){ if (e.target.closest(".chip")) play(); });
+
+  // theme
+  var SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  var tb = q("theme");
+  function paint(){ var d = root.getAttribute("data-dsa-theme")==="dark"; tb.innerHTML = d ? SUN : MOON; tb.setAttribute("aria-label", d ? "Switch to light mode" : "Switch to dark mode"); tb.title = tb.getAttribute("aria-label"); }
+  try { var saved = localStorage.getItem("dsa-theme"); if (saved==="dark"||saved==="light") root.setAttribute("data-dsa-theme", saved); } catch(e){}
+  tb.addEventListener("click", function(){ var n = root.getAttribute("data-dsa-theme")==="dark" ? "light" : "dark"; root.setAttribute("data-dsa-theme", n); try{ localStorage.setItem("dsa-theme", n); }catch(e){} paint(); });
+  paint(); renderLib(); renderQueue();
+})();
+</script>
+</div>
+
+</main>
+</body>
+</html>
