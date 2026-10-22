@@ -9,7 +9,6 @@ In my last role I audited our component library by hand. Two kinds of work were 
 An agent is good at the first kind of work. The second still needs a person. This prototype explores where that line sits, and how an interface can make it visible.
 
 - **Write-up:** [pueblo-vista.com/design-system-audit-agent](https://pueblo-vista.com/design-system-audit-agent/)
-- **Figma (tokens, components, screens, light and dark):** [Northwind Audit Agent · Design System](https://www.figma.com/design/LtIy0JfRe7FbAhEJKYXamQ)
 - **Try it:** open [`index.html`](index.html) in a browser. It plays a recorded run; approve, reject and undo work for real.
 
 ## Design decisions
